@@ -53,9 +53,14 @@ router.post("/login", function (req, res, next) {
             );
             if (isPasswordValid) {
                 jwt.sign(
-                    { username: param.username, id: result.id, image: result.useravatar, userId: result._id },
+                    {
+                        username: param.username,
+                        id: result.id,
+                        image: result.useravatar,
+                        userId: result._id,
+                    },
                     jwtKey,
-                    { expiresIn: "1h" },
+                    { expiresIn: "72h" },
                     (err, token) => {
                         res.json({
                             code: 1,
@@ -90,22 +95,58 @@ router.post("/loginStatus", function (req, res) {
                 error: "未登录",
             });
         } else {
+            operate.findOne({ username: payload.username }).then((result) => {
+                if (result) {
+                    var data = {
+                        id: result.id,
+                        username: result.username,
+                        useravatar: result.useravatar,
+                    };
+                    res.json({
+                        code: 1,
+                        success: "查询成功",
+                        data: data,
+                    });
+                } else {
+                    res.json({
+                        code: 0,
+                        error: "查询失败",
+                    });
+                    // res.redirect("/login");
+                }
+            });
+        }
+    });
+});
+
+router.post("/showAvatar", function (req, res) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                error: "未登录",
+            });
+        } else {
             operate
                 .findOne(
-                    { username: payload.username },
+                    { id: payload.id },
+                    {
+                        useravatar: 1,
+                        introduce: 1,
+                        username: 1,
+                        userFans: { $size: "$userFans" },
+                        userFocus: { $size: "$userFocus" },
+                        userPrestige: 1,
+                    }
                 )
                 .then((result) => {
-                    console.log("userewq: ",result);
                     if (result) {
-                        var data = {
-                            id: result.id,
-                            username: result.username,
-                            useravatar: result.useravatar,
-                        };
                         res.json({
                             code: 1,
                             success: "查询成功",
-                            data: data,
+                            data: result,
                         });
                     } else {
                         res.json({
@@ -117,39 +158,6 @@ router.post("/loginStatus", function (req, res) {
                 });
         }
     });
-});
-
-router.post("/showAvatar", function (req, res) {
-    let param = {
-        id: req.body.id,
-    };
-    operate
-        .findOne(
-            { id: param.id },
-            {
-                useravatar: 1,
-                introduce: 1,
-                username: 1,
-                userFans: { $size: "$userFans" },
-                userFocus: { $size: "$userFocus" },
-                userPrestige: 1,
-            }
-        )
-        .then((result) => {
-            if (result) {
-                res.json({
-                    code: 1,
-                    success: "查询成功",
-                    data: result,
-                });
-            } else {
-                res.json({
-                    code: 0,
-                    error: "查询失败",
-                });
-                // res.redirect("/login");
-            }
-        });
 });
 
 module.exports = router;

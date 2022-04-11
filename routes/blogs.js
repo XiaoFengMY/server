@@ -89,8 +89,6 @@ router.post("/editBlog", (req, res, next) => {
             });
         } else {
             operate.findOne({ id: param.id }).then((result, error) => {
-                console.log("dsadasss",result.username.toString())
-                console.log("dsadasdss",payload.username)
                 if (result.username.toString() == payload.userId) {
                     res.json({
                         code: 1,

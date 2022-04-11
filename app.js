@@ -11,6 +11,7 @@ const MongoStore = require("connect-mongo");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var blogsRouter = require("./routes/blogs");
+var commentsRouter = require("./routes/comments");
 var orthersRouter = require("./routes/orthers");
 var testApiRouter = require("./routes/testApi");
 
@@ -68,6 +69,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/blogs", blogsRouter);
+app.use("/comments", commentsRouter);
 app.use("/orthers", orthersRouter);
 app.use("/testApi", testApiRouter);
 
