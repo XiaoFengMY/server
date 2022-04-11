@@ -89,7 +89,9 @@ router.post("/editBlog", (req, res, next) => {
             });
         } else {
             operate.findOne({ id: param.id }).then((result, error) => {
-                if (result.username == payload.username) {
+                console.log("dsadasss",result.username.toString())
+                console.log("dsadasdss",payload.username)
+                if (result.username.toString() == payload.userId) {
                     res.json({
                         code: 1,
                         success: "编辑中",
@@ -257,7 +259,6 @@ router.post("/blogDetail", (req, res, next) => {
         id: req.body.id,
     };
     operate.findOne({ id: param.id }).then((result, error) => {
-        console.log(result);
         if (result) {
             operate
                 .find(
