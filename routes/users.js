@@ -120,44 +120,34 @@ router.post("/loginStatus", function (req, res) {
 });
 
 router.post("/showAvatar", function (req, res) {
-    const headers = req.headers;
-    const token = headers["authorization"].split(" ")[1];
-    jwt.verify(token, jwtKey, (err, payload) => {
-        if (err) {
-            res.json({
-                code: 0,
-                error: "未登录",
-            });
-        } else {
-            operate
-                .findOne(
-                    { id: payload.id },
-                    {
-                        useravatar: 1,
-                        introduce: 1,
-                        username: 1,
-                        userFans: { $size: "$userFans" },
-                        userFocus: { $size: "$userFocus" },
-                        userPrestige: 1,
-                    }
-                )
-                .then((result) => {
-                    if (result) {
-                        res.json({
-                            code: 1,
-                            success: "查询成功",
-                            data: result,
-                        });
-                    } else {
-                        res.json({
-                            code: 0,
-                            error: "查询失败",
-                        });
-                        // res.redirect("/login");
-                    }
+    operate
+        .findOne(
+            { id: req.body.id },
+            {
+                useravatar: 1,
+                introduce: 1,
+                username: 1,
+                userFans: { $size: "$userFans" },
+                userFocus: { $size: "$userFocus" },
+                userPrestige: 1,
+            }
+        )
+        .then((result) => {
+            console.log("resulit", result)
+            if (result) {
+                res.json({
+                    code: 1,
+                    success: "查询成功",
+                    data: result,
                 });
-        }
-    });
+            } else {
+                res.json({
+                    code: 0,
+                    error: "用户不存在",
+                });
+                // res.redirect("/login");
+            }
+        });
 });
 
 module.exports = router;

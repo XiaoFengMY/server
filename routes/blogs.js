@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 var jwt = require("jsonwebtoken");
 var operate = require("../operate/blog");
-let BlogModel = require('../model/Blog.js');
+let BlogModel = require("../model/Blog.js");
 var jwtKey = "hello";
 
 /* GET home page. */
@@ -112,19 +112,17 @@ router.post("/search", (req, res, next) => {
     var str = ".*" + searchValue + ".*$";
     var reg = new RegExp(str);
     // $options:'i' 表示忽略大小写
-    operate
-        .search(
-            { blogTitle: { $regex: reg, $options: "i" } },
-            {
-                blogTitle: 1,
-                id: 1,
-                username: 1,
-                blogTabs: 1,
-                blogLikes: 1,
-                blogCollects: 1,
-            }
-        )
-        .then((result, error) => {
+    BlogModel.find(
+        { blogTitle: { $regex: reg, $options: "i" } },
+        {
+            blogTitle: 1,
+            id: 1,
+            username: 1,
+            blogTabs: 1,
+            blogLikes: 1,
+            blogCollects: 1,
+        },
+        function (err, result) {
             if (result) {
                 res.json({
                     code: 1,
@@ -134,11 +132,12 @@ router.post("/search", (req, res, next) => {
             } else {
                 res.json({
                     code: 0,
-                    err: error,
+                    err: err,
                     error: "查找失败",
                 });
             }
-        });
+        }
+    ).populate("username", "username _id id useravatar ");
 });
 
 router.post("/deleteBlog", (req, res, next) => {
@@ -194,35 +193,34 @@ router.get("/showBlogs", (req, res, next) => {
             blogSort: req.query.classify,
         };
     }
-    BlogModel
-        .find(
-            param,
-            {
-                blogTitle: 1,
-                id: 1,
-                username: 1,
-                blogTabs: 1,
-                blogLikes: 1,
-                blogCollects: 1,
-                blogRecommend: 1,
-            },
-            { sort: { id: sortItem } },
-            function (err, result) {
-                if (result) {
-                    res.json({
-                        code: 1,
-                        success: "查找成功",
-                        data: result,
-                    });
-                } else {
-                    res.json({
-                        code: 0,
-                        err: err,
-                        error: "查找失败",
-                    });
-                }
+    BlogModel.find(
+        param,
+        {
+            blogTitle: 1,
+            id: 1,
+            username: 1,
+            blogTabs: 1,
+            blogLikes: 1,
+            blogCollects: 1,
+            blogRecommend: 1,
+        },
+        { sort: { id: sortItem } },
+        function (err, result) {
+            if (result) {
+                res.json({
+                    code: 1,
+                    success: "查找成功",
+                    data: result,
+                });
+            } else {
+                res.json({
+                    code: 0,
+                    err: err,
+                    error: "查找失败",
+                });
             }
-        ).populate('username','username _id id useravatar ');
+        }
+    ).populate("username", "username _id id useravatar ");
 });
 
 router.get("/hotBlogList", (req, res, next) => {
