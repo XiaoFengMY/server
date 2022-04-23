@@ -220,7 +220,7 @@ router.get("/showBlogs", (req, res, next) => {
                 });
             }
         }
-    ).populate("username", "username _id id useravatar ");
+    ).populate("username", " username _id id useravatar introduce ");
 });
 
 router.get("/hotBlogList", (req, res, next) => {

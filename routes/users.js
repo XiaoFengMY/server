@@ -3,6 +3,7 @@ var bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 var router = express.Router();
 var operate = require("../operate/user");
+let userModel = require("../model/User.js");
 var jwtKey = "hello";
 
 /* GET users listing. */
@@ -120,34 +121,128 @@ router.post("/loginStatus", function (req, res) {
 });
 
 router.post("/showAvatar", function (req, res) {
-    operate
-        .findOne(
-            { id: req.body.id },
-            {
-                useravatar: 1,
-                introduce: 1,
-                username: 1,
-                userFans: { $size: "$userFans" },
-                userFocus: { $size: "$userFocus" },
-                userPrestige: 1,
-            }
-        )
-        .then((result) => {
-            console.log("resulit", result)
-            if (result) {
-                res.json({
-                    code: 1,
-                    success: "查询成功",
-                    data: result,
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                error: "验证失败",
+            });
+        } else {
+            operate
+                .findOne(
+                    { id: req.body.id },
+                    {
+                        useravatar: 1,
+                        introduce: 1,
+                        username: 1,
+                        userFans: { $size: "$userFans" },
+                        userFocus: { $size: "$userFocus" },
+                        userPrestige: 1,
+                    }
+                )
+                .then((result) => {
+                    if (result) {
+                        if (req.body.id == payload.id) {
+                            res.json({
+                                code: 1,
+                                isLoginUser: true,
+                                success: "查询成功",
+                                data: result,
+                            });
+                        } else {
+                            res.json({
+                                code: 1,
+                                isLoginUser: false,
+                                success: "查询成功",
+                                data: result,
+                            });
+                        }
+                    } else {
+                        res.json({
+                            code: 0,
+                            error: "用户不存在",
+                        });
+                        // res.redirect("/login");
+                    }
                 });
-            } else {
-                res.json({
-                    code: 0,
-                    error: "用户不存在",
+        }
+    });
+});
+
+router.post("/getUserInfo", function (req, res) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                error: "用户未登录",
+            });
+        } else {
+            operate
+                .findOne(
+                    { id: payload.id },
+                    {
+                        useravatar: 1,
+                        introduce: 1,
+                        username: 1,
+                        email: 1,
+                        phone: 1,
+                        sex: 1,
+                        birthday: 1,
+                    }
+                )
+                .then((result) => {
+                    if (result) {
+                        console.log("result: ", result);
+                        res.json({
+                            code: 1,
+                            success: "查询成功",
+                            data: result,
+                        });
+                    } else {
+                        res.json({
+                            code: 0,
+                            error: "用户不存在",
+                        });
+                        // res.redirect("/login");
+                    }
                 });
-                // res.redirect("/login");
-            }
-        });
+        }
+    });
+});
+
+router.post("/editUserInfo", function (req, res) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                message: "校验失败",
+            });
+        } else {
+            userModel.updateOne(
+                { id: payload.id },
+                req.body.values.user,
+                function (err,result) {
+                    if (err) {
+                        res.json({
+                            code: 0,
+                            message: "修改失败",
+                        });
+                    } else {
+                        res.json({
+                            code: 1,
+                            message: "修改成功",
+                        });
+                    }
+                }
+            );
+        }
+    });
 });
 
 module.exports = router;

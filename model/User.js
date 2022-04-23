@@ -33,6 +33,15 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: "",
     },
+    sex: {
+        type: String,
+        default: "other",
+        enum: ["male", "femal", "other"]
+    },
+    birthday:{
+        type: Date,
+        default: ""
+    },
     username: {
         type: String,
         //唯一索引
