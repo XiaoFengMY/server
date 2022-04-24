@@ -84,6 +84,10 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    //用户点赞的文章
+    userLikeBlogs: [{
+        type: String,
+    }],
 });
 autoIncrement.initialize(mongoose.connection); 
 UserSchema.plugin(autoIncrement.plugin, {
