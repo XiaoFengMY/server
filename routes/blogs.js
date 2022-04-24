@@ -3,6 +3,7 @@ var router = express.Router();
 var jwt = require("jsonwebtoken");
 var operate = require("../operate/blog");
 let BlogModel = require("../model/Blog.js");
+let userModel = require("../model/User.js");
 var jwtKey = "hello";
 
 /* GET home page. */
@@ -157,13 +158,13 @@ router.post("/deleteBlog", (req, res, next) => {
                 if (result.username == payload.username) {
                     res.json({
                         code: 1,
-                        success: "删除成功",
+                        message: "删除成功",
                     });
                 } else {
                     res.json({
                         code: 0,
                         err: error,
-                        error: "不能删除该文章",
+                        message: "不能删除该文章",
                     });
                 }
             });
@@ -178,15 +179,9 @@ router.get("/showBlogs", (req, res, next) => {
         var sortItem = 1;
     }
     if (req.query.classify == "全部") {
-        if (req.query.username) {
-            var param = {
-                username: req.query.username,
-            };
-        } else {
-            var param = {
-                blogSee: true,
-            };
-        }
+        var param = {
+            blogSee: true,
+        };
     } else {
         var param = {
             blogSee: true,
@@ -286,6 +281,47 @@ router.post("/blogDetail", (req, res, next) => {
             });
         }
     });
+});
+
+router.get("/showUerBlogs", (req, res, next) => {
+    userModel.findOne(
+        {
+            id: req.query.id,
+        },
+        { userCreateBlogs: 1,_id:1 },
+        function (error, result) {
+            if (result) {
+                const blogs = result._id;
+                BlogModel.find(
+                    { username: blogs },
+                    {
+                        blogTitle: 1,
+                        id: 1,
+                        blogTabs: 1,
+                    },
+                    {  },
+                    function (err, dataResult) {
+                        console.log("result: ", dataResult);
+                        if (dataResult) {
+                            res.json({
+                                code: 1,
+                                success: "查找成功",
+                                data: dataResult,
+                            });
+                        } else {
+                            res.json({
+                                code: 0,
+                                err: err,
+                                error: "查找失败",
+                            });
+                        }
+                    }
+                )
+            } else {
+                console.log("error: ", error);
+            }
+        }
+    );
 });
 
 module.exports = router;

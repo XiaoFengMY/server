@@ -120,7 +120,7 @@ router.post("/loginStatus", function (req, res) {
     });
 });
 
-router.post("/showAvatar", function (req, res) {
+router.post("/showUserInfo", function (req, res) {
     const headers = req.headers;
     const token = headers["authorization"].split(" ")[1];
     jwt.verify(token, jwtKey, (err, payload) => {
