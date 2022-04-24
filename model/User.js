@@ -88,6 +88,9 @@ const UserSchema = new mongoose.Schema({
     userLikeBlogs: [{
         type: String,
     }],
+    userCollectBlogs: [{
+        type: String,
+    }],
 });
 autoIncrement.initialize(mongoose.connection); 
 UserSchema.plugin(autoIncrement.plugin, {

@@ -149,6 +149,121 @@ router.get("/isLiked", function (req, res, next) {
     });
 });
 
+router.get("/collectBlog", function (req, res, next) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                message: "登录已过期",
+            });
+        } else {
+            if (req.query.isCollected == "false") {
+                userModel.updateOne(
+                    { id: payload.id },
+                    { $addToSet: { userCollectBlogs: req.query.blogId } },
+                    function (err) {
+                        if (err) {
+                            res.json({
+                                code: 0,
+                                message: "收藏失败",
+                            });
+                        } else {
+                            BlogModel.updateOne(
+                                { id: req.query.blogId },
+                                { $inc: { blogCollects: +1, blogHot: +15 } },
+                                function (error) {
+                                    if (error) {
+                                        res.json({
+                                            code: 0,
+                                            message: "收藏失败",
+                                        });
+                                    } else {
+                                        res.json({
+                                            code: 1,
+                                            message: "收藏成功",
+                                        });
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
+            } else {
+                userModel.updateOne(
+                    { id: payload.id },
+                    { $pull: { userCollectBlogs: req.query.blogId } },
+                    function (err) {
+                        if (err) {
+                            res.json({
+                                code: 0,
+                                message: "取消收藏失败",
+                            });
+                        } else {
+                            BlogModel.updateOne(
+                                { id: req.query.blogId },
+                                { $inc: { blogCollects: -1, blogHot: -8 } },
+                                function (error) {
+                                    if (error) {
+                                        res.json({
+                                            code: 0,
+                                            message: "取消收藏失败",
+                                        });
+                                    } else {
+                                        res.json({
+                                            code: 1,
+                                            message: "取消收藏成功",
+                                        });
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
+            }
+        }
+    });
+});
+
+router.get("/isCollected", function (req, res, next) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                message: "登录已过期",
+            });
+        } else {
+            userModel.findOne(
+                {
+                    id: payload.id,
+                    userCollectBlogs: { $elemMatch: { $eq: req.query.blogId } },
+                },
+                { userCollectBlogs: 1 },
+                function (error, result) {
+                    if (result) {
+                        console.log("result: ", result);
+                        res.json({
+                            code: 1,
+                            message: "已收藏",
+                            isCollected: true,
+                        });
+                    } else {
+                        console.log("error: ", error);
+                        res.json({
+                            code: 0,
+                            message: "未收藏",
+                            isCollected: false,
+                        });
+                    }
+                }
+            );
+        }
+    });
+});
+
 router.get("/getImg", function (req, res) {
     let img = req.query.img;
     let path = `public/images/${img}`;
