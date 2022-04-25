@@ -132,32 +132,48 @@ router.post("/showUserInfo", function (req, res) {
         } else {
             operate
                 .findOne(
-                    { id: req.body.id },
+                    { id: req.body.userId },
                     {
                         useravatar: 1,
                         introduce: 1,
                         username: 1,
-                        userFans: { $size: "$userFans" },
-                        userFocus: { $size: "$userFocus" },
+                        userFansNum: { $size: "$userFans" },
+                        userFocusNum: { $size: "$userFocus" },
                         userPrestige: 1,
+                        userFans: 1,
                     }
                 )
                 .then((result) => {
                     if (result) {
-                        if (req.body.id == payload.id) {
+                        console.log(
+                            "userid",
+                            req.body.userId,
+                            "loginuserId: ",
+                            payload.id
+                        );
+                        if (req.body.userId == payload.id) {
                             res.json({
                                 code: 1,
-                                isLoginUser: true,
+                                isLoginUser: "loginUser",
                                 success: "查询成功",
                                 data: result,
                             });
                         } else {
-                            res.json({
-                                code: 1,
-                                isLoginUser: false,
-                                success: "查询成功",
-                                data: result,
-                            });
+                            if (result.userFans.indexOf(payload.id) > -1) {
+                                res.json({
+                                    code: 1,
+                                    isLoginUser: "focusUser",
+                                    success: "查询成功",
+                                    data: result,
+                                });
+                            } else {
+                                res.json({
+                                    code: 1,
+                                    isLoginUser: "unFocusUser",
+                                    success: "查询成功",
+                                    data: result,
+                                });
+                            }
                         }
                     } else {
                         res.json({
@@ -227,7 +243,7 @@ router.post("/editUserInfo", function (req, res) {
             userModel.updateOne(
                 { id: payload.id },
                 req.body.values.user,
-                function (err,result) {
+                function (err, result) {
                     if (err) {
                         res.json({
                             code: 0,
@@ -241,6 +257,87 @@ router.post("/editUserInfo", function (req, res) {
                     }
                 }
             );
+        }
+    });
+});
+
+router.post("/focusUser", function (req, res) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                message: "未登录",
+                isLoginUser: "unFocusUser",
+            });
+        } else {
+            if (req.body.isLoginUser == "unFocusUser") {
+                userModel.updateOne(
+                    { id: payload.id },
+                    { $addToSet: { userFocus: req.body.userId } },
+                    function (err1, result1) {
+                        if (err1) {
+                            res.json({
+                                code: 0,
+                                message: "关注失败",
+                                isLoginUser: "unFocusUser",
+                            });
+                        } else {
+                            userModel.updateOne(
+                                { id: req.body.userId },
+                                { $addToSet: { userFans: payload.id } },
+                                function (err2, result2) {
+                                    if (err2) {
+                                        res.json({
+                                            code: 0,
+                                            message: "关注失败",
+                                            isLoginUser: "unFocusUser",
+                                        });
+                                    } else {
+                                        res.json({
+                                            code: 1,
+                                            message: "关注成功",
+                                            isLoginUser: "focusUser",
+                                        });
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
+            } else {
+                userModel.updateOne(
+                    { id: payload.id },
+                    { $addToSet: { userFocus: req.body.userId } },
+                    function (err1, result1) {
+                        if (err1) {
+                            res.json({
+                                code: 0,
+                                message: "取消关注失败",
+                            });
+                        } else {
+                            userModel.updateOne(
+                                { id: req.body.userId },
+                                { $pull: { userFans: payload.id } },
+                                function (err2, result2) {
+                                    if (err2) {
+                                        res.json({
+                                            code: 0,
+                                            message: "取消关注失败",
+                                        });
+                                    } else {
+                                        res.json({
+                                            code: 1,
+                                            message: "取消关注成功",
+                                        });
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
+            }
         }
     });
 });
