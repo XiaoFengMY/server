@@ -173,20 +173,22 @@ router.post("/deleteBlog", (req, res, next) => {
 });
 
 router.get("/showBlogs", (req, res, next) => {
+    var param = {};
+    var listSort = {};
     if (req.query.sort == "nowTime") {
-        var sortItem = -1;
+        listSort.id = -1;
+    } else if (req.query.sort == "comprehensive") {
+        listSort.blogHot = -1;
+    }else if(req.query.sort == "reading"){
+        listSort.blogReadings = -1;
     } else {
-        var sortItem = 1;
+        listSort.id = 1;
     }
     if (req.query.classify == "全部") {
-        var param = {
-            blogSee: true,
-        };
+        param.blogSee = true;
     } else {
-        var param = {
-            blogSee: true,
-            blogSort: req.query.classify,
-        };
+        param.blogSee = true;
+        param.blogSort = req.query.classify;
     }
     BlogModel.find(
         param,
@@ -199,7 +201,7 @@ router.get("/showBlogs", (req, res, next) => {
             blogCollects: 1,
             blogRecommend: 1,
         },
-        { sort: { id: sortItem } },
+        { sort: listSort },
         function (err, result) {
             if (result) {
                 res.json({
@@ -226,7 +228,7 @@ router.get("/hotBlogList", (req, res, next) => {
                 blogTitle: 1,
                 id: 1,
             },
-            { sort: { blogHot: -1 }, limit: 10 }
+            { sort: { blogLikes: -1 }, limit: 10 }
         )
         .then((result, error) => {
             if (result) {
@@ -249,38 +251,42 @@ router.post("/blogDetail", (req, res, next) => {
     let param = {
         id: req.body.id,
     };
-    operate.findOne({ id: param.id }).then((result, error) => {
-        if (result) {
-            operate
-                .find(
-                    { blogSort: result.blogSort },
-                    { blogTitle: 1, id: 1 },
-                    {}
-                )
-                .then((resdata, err) => {
-                    if (resdata) {
-                        res.json({
-                            code: 1,
-                            success: "查找成功",
-                            data: result,
-                            other: resdata,
-                        });
-                    } else {
-                        res.json({
-                            code: 0,
-                            err: err,
-                            error: "查找失败",
-                        });
-                    }
-                });
-        } else {
-            res.json({
-                code: 0,
-                err: error,
-                error: "查找失败",
-            });
+    BlogModel.findOneAndUpdate(
+        { id: param.id },
+        { $inc: { blogReadings: +1, blogHot: +2 } },
+        function (error, result) {
+            if (error) {    
+                res.json({
+                    code: 0,
+                    err: error,
+                    error: "查找失败",
+                });    
+            } else {
+                operate
+                    .find(
+                        { blogSort: result.blogSort },
+                        { blogTitle: 1, id: 1 },
+                        {}
+                    )
+                    .then((resdata, err) => {
+                        if (resdata) {
+                            res.json({
+                                code: 1,
+                                success: "查找成功",
+                                data: result,
+                                other: resdata,
+                            });
+                        } else {
+                            res.json({
+                                code: 0,
+                                err: err,
+                                error: "查找失败",
+                            });
+                        }
+                    });
+            }
         }
-    });
+    );
 });
 
 router.get("/showUerBlogs", (req, res, next) => {
@@ -288,7 +294,7 @@ router.get("/showUerBlogs", (req, res, next) => {
         {
             id: req.query.id,
         },
-        { userCreateBlogs: 1,_id:1 },
+        { userCreateBlogs: 1, _id: 1 },
         function (error, result) {
             if (result) {
                 const blogs = result._id;
@@ -299,7 +305,7 @@ router.get("/showUerBlogs", (req, res, next) => {
                         id: 1,
                         blogTabs: 1,
                     },
-                    {  },
+                    {},
                     function (err, dataResult) {
                         console.log("result: ", dataResult);
                         if (dataResult) {
@@ -316,7 +322,7 @@ router.get("/showUerBlogs", (req, res, next) => {
                             });
                         }
                     }
-                )
+                );
             } else {
                 console.log("error: ", error);
             }
