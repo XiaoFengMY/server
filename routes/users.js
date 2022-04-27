@@ -223,6 +223,37 @@ router.post("/getUserInfo", function (req, res) {
     });
 });
 
+router.post("/editUserAvatar", function (req, res) {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 0,
+                message: "用户未登录",
+            });
+        } else {
+            userModel.updateOne(
+                { id: payload.id },
+                { $set: { useravatar: req.body.avatar } },
+                function (error) {
+                    if (error) {
+                        res.json({
+                            code: 0,
+                            message: "修改失败",
+                        });
+                    } else {
+                        res.json({
+                            code: 1,
+                            message: "修改成功",
+                        });
+                    }
+                }
+            );
+        }
+    });
+});
+
 router.post("/editUserInfo", function (req, res) {
     const headers = req.headers;
     const token = headers["authorization"].split(" ")[1];

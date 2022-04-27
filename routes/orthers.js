@@ -25,7 +25,7 @@ router.post("/upload", function (req, res, next) {
             res.json({
                 code: 1,
                 msg: "文件上传成功",
-                imgurl: files.logo.newFilename,
+                name: files.file.newFilename,
                 // imgurl: files.logo.filepath,
             });
         }
