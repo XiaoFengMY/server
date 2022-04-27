@@ -14,83 +14,60 @@ router.post("/blogComment", (req, res, next) => {
                 message: "未登录不能评论",
             });
         } else {
-            let param = {
-                commentContent: req.body.content,
-                commentAuthor: payload.userId,
-            };
-            console.log("param: ", param);
-            CommentModel.findOne({ id: req.body.id }, { id: 1 }, (result) => {
-                if (result) {
-                    CommentModel.findOneAndUpdate(
-                        { id: req.body.id },
-                        { $addToSet: { commentList: param } },
-                        function (err, doc) {
-                            if (doc) {
-                                res.json({
-                                    code: 1,
-                                    success: "评论成功",
-                                });
-                            } else {
-                                res.json({
-                                    code: 0,
-                                    err: err,
-                                    error: "评论失败",
-                                });
-                            }
-                        }
-                    );
-                } else {
-                    var data = {
-                        id: req.body.id,
-                        commentList: [
-                            {
-                                commentAuthor: payload.userId,
-                                commeContent: req.body.content,
+            if (req.body.commentId) {
+                CommentModel.updateOne(
+                    { id: req.body.commentId },
+                    {
+                        $push: {
+                            children: {
+                                commentContent: req.body.content,
+                                username: payload.userId,
                             },
-                        ],
-                    };
-                    CommentModel.create(data, (err, docs) => {
-                        if (err) {
-                            console.log(err);
+                        },
+                    },
+                    (error) => {
+                        if (error) {
+                            res.json({
+                                code: 0,
+                                message: "评论失败",
+                            });
                         } else {
-                            console.log(docs);
+                            res.json({
+                                code: 1,
+                                message: "评论成功",
+                            });
                         }
-                    });
-                }
-            });
-        }
-    });
-
-    /* CommentModel.findOneAndUpdate(
-        { id: param.id },
-        { $addToSet: { commentList: param } },
-        function (err, doc) {
-            console.log("id: ", param.id);
-            console.log("doc: ",doc);
-            console.log("err: ",err);
-            if (doc) {
-                res.json({
-                    code: 1,
-                    success: "评论成功",
-                });
+                    }
+                )
             } else {
-                res.json({
-                    code: 0,
-                    err: err,
-                    error: "评论失败",
+                let param = {
+                    commentContent: req.body.content,
+                    blogId: req.body.id,
+                    username: payload.userId,
+                };
+                CommentModel.create(param, (err) => {
+                    if (err) {
+                        res.json({
+                            code: 0,
+                            message: "评论失败",
+                        });
+                    } else {
+                        res.json({
+                            code: 1,
+                            message: "评论成功",
+                        });
+                    }
                 });
             }
         }
-    ); */
+    });
 });
 
 router.post("/blogCommentList", (req, res, next) => {
     let param = {
-        id: req.body.id,
+        blogId: req.body.blogId,
     };
     CommentModel.find(param, {}, function (err, result) {
-        console.log("result: ", result);
-        console.log("errorssss: ", err);
         if (result) {
             res.json({
                 code: 1,
@@ -104,27 +81,7 @@ router.post("/blogCommentList", (req, res, next) => {
                 error: "查找失败",
             });
         }
-    }).populate("commentList.username", "username _id id useravatar ");
-    /* CommentModel.findOne(param)
-        .populate("commentList.username")
-        .exec(function (result, err) {
-            console.log("result: ", result);
-            console.log("param: ",param)
-            console.log("errorssss: ", err);
-            if (result) {
-                res.json({
-                    code: 1,
-                    success: "查找成功",
-                    data: result,
-                });
-            } else {
-                res.json({
-                    code: 0,
-                    err: err,
-                    error: "查找失败",
-                });
-            }
-        }); */
+    }).populate("username children.username", "username _id id useravatar ");
 });
 
 module.exports = router;

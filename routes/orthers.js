@@ -17,13 +17,11 @@ router.post("/upload", function (req, res, next) {
 
     form.parse(req, function (err, fileds, files) {
         if (err) {
-            console.log(err);
             res.json({
                 code: 0,
                 msg: "文件上传失败",
             });
         } else {
-            console.log(files.logo.newFilename);
             res.json({
                 code: 1,
                 msg: "文件上传成功",
@@ -129,14 +127,12 @@ router.get("/isLiked", function (req, res, next) {
                 { userLikeBlogs: 1 },
                 function (error, result) {
                     if (result) {
-                        console.log("result: ", result);
                         res.json({
                             code: 1,
                             message: "已点赞",
                             isLiked: true,
                         });
                     } else {
-                        console.log("error: ", error);
                         res.json({
                             code: 0,
                             message: "未点赞",
@@ -244,14 +240,12 @@ router.get("/isCollected", function (req, res, next) {
                 { userCollectBlogs: 1 },
                 function (error, result) {
                     if (result) {
-                        console.log("result: ", result);
                         res.json({
                             code: 1,
                             message: "已收藏",
                             isCollected: true,
                         });
                     } else {
-                        console.log("error: ", error);
                         res.json({
                             code: 0,
                             message: "未收藏",

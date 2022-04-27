@@ -307,7 +307,6 @@ router.get("/showUerBlogs", (req, res, next) => {
                     },
                     {},
                     function (err, dataResult) {
-                        console.log("result: ", dataResult);
                         if (dataResult) {
                             res.json({
                                 code: 1,
@@ -324,7 +323,11 @@ router.get("/showUerBlogs", (req, res, next) => {
                     }
                 );
             } else {
-                console.log("error: ", error);
+                res.json({
+                    code: 0,
+                    err: error,
+                    error: "查找失败",
+                });
             }
         }
     );

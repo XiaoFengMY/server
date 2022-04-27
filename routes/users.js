@@ -145,12 +145,6 @@ router.post("/showUserInfo", function (req, res) {
                 )
                 .then((result) => {
                     if (result) {
-                        console.log(
-                            "userid",
-                            req.body.userId,
-                            "loginuserId: ",
-                            payload.id
-                        );
                         if (req.body.userId == payload.id) {
                             res.json({
                                 code: 1,
@@ -212,7 +206,6 @@ router.post("/getUserInfo", function (req, res) {
                 )
                 .then((result) => {
                     if (result) {
-                        console.log("result: ", result);
                         res.json({
                             code: 1,
                             success: "查询成功",

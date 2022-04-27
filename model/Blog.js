@@ -61,10 +61,10 @@ const BlogSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    blogComments: {
+    blogComments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment',
-    }
+    }]
 });
 autoIncrement.initialize(mongoose.connection); 
 BlogSchema.plugin(autoIncrement.plugin, {

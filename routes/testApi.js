@@ -18,7 +18,10 @@ router.get("/hotBlogList", (req, res, next) => {
             { sort: { blogHot: -1 }, limit: 10 },
             function(err, doc){ 
                 if(err) {
-                    console.log(err.message)
+                    res.json({
+                        code: 0,
+                        message: "查找失败",
+                    });
                 }else{
                     res.json({
                         data: doc,
