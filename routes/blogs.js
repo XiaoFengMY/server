@@ -291,7 +291,7 @@ router.post("/blogDetail", (req, res, next) => {
                     });
             }
         }
-    ).populate("editUser.username", " username _id id useravatar introduce ");;
+    ).populate("editUser.username", " username _id id useravatar introduce ");
 });
 
 router.get("/showUerBlogs", (req, res, next) => {
@@ -336,6 +336,120 @@ router.get("/showUerBlogs", (req, res, next) => {
             }
         }
     );
+});
+
+router.post("/showSelectBlogs", (req, res, next) => {
+    const headers = req.headers;
+    const token = headers["authorization"].split(" ")[1];
+    jwt.verify(token, jwtKey, (err, payload) => {
+        if (err) {
+            res.json({
+                code: 3,
+                message: "登录已过期",
+            });
+        } else {
+            if (req.body.select == "user") {
+                userModel
+                    .findOne(
+                        {
+                            id: payload.id,
+                        },
+                        { userFocus: 1 }
+                    )
+                    .then((result, error) => {
+                        if (result) {
+                            var focusUser = result.userFocus;
+                            userModel.find(
+                                { id: { $in: focusUser } },
+                                {
+                                    _id: 1,
+                                },
+                                function (error1, dataResult) {
+                                    if (dataResult) {
+                                        var user_id = [];
+                                        dataResult.forEach((item) => {
+                                            user_id.push(item._id);
+                                        });
+                                        BlogModel.find(
+                                            {
+                                                username: {
+                                                    $in: user_id,
+                                                },
+                                            },
+                                            {
+                                                blogTitle: 1,
+                                                id: 1,
+                                                blogRecommend: 1,
+                                            },
+                                            function (error2, resultone) {
+                                                if (result) {
+                                                    res.json({
+                                                        code: 1,
+                                                        message: "查找成功",
+                                                        data: resultone,
+                                                    });
+                                                }else{
+                                                    res.json({
+                                                        code: 0,
+                                                        err: error2,
+                                                        message: "查找失败",
+                                                    });
+                                                }
+                                            }
+                                        );
+                                    } else {
+                                        res.json({
+                                            code: 0,
+                                            err: error1,
+                                            message: "查找失败",
+                                        });
+                                    }
+                                }
+                            );
+                        } else {
+                            res.json({
+                                code: 0,
+                                err: error,
+                                message: "查找失败",
+                            });
+                        }
+                    });
+            } else {
+                userModel
+                    .findOne({ id: payload.id }, { userCollectBlogs: 1 })
+                    .then((result, error) => {
+                        if (result) {
+                            var collectBlogs = result.userCollectBlogs;
+                            BlogModel.find(
+                                { id: { $in: collectBlogs } },
+                                { blogTitle: 1, id: 1, blogRecommend: 1 },
+                                function (err, dataResult) {
+                                    if (dataResult) {
+                                        res.json({
+                                            code: 1,
+                                            message: "查找成功",
+                                            data: dataResult,
+                                        });
+                                    } else {
+                                        res.json({
+                                            code: 0,
+                                            err: err,
+                                            message: "查找失败",
+                                        });
+                                    }
+                                }
+                            );
+                        } else {
+                            res.json({
+                                code: 0,
+                                err: error,
+                                message: "查找失败",
+                            });
+                        }
+                    });
+            }
+        }
+    });
 });
 
 module.exports = router;
