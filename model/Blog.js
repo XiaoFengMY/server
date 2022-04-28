@@ -7,23 +7,25 @@ const BlogSchema = new mongoose.Schema({
     // 用户类型 0：博主 1：其他用户
     username: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: "User",
     },
-    blogTitle: { 
-        type: String, 
-        default: "" 
+    blogTitle: {
+        type: String,
+        default: "",
     },
     blogSort: {
         type: String,
-        default: ""
+        default: "",
     },
-    blogTabs: [{
-        type: String,
-        default: ""
-    }],
+    blogTabs: [
+        {
+            type: String,
+            default: "",
+        },
+    ],
     blogRecommend: {
         type: String,
-        default: "叶一帆，前端及后端开发，计信院最肥的鸽子"
+        default: "叶一帆，前端及后端开发，计信院最肥的鸽子",
     },
     blogContent: {
         type: String,
@@ -33,6 +35,18 @@ const BlogSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
+    editUser: [
+        {
+            username: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+            editTime: {
+                type: Date,
+                default: Date.now,
+            },
+        },
+    ],
     createTime: {
         type: Date,
         default: Date.now,
@@ -43,30 +57,32 @@ const BlogSchema = new mongoose.Schema({
     },
     blogSee: {
         type: Boolean,
-        default: true
+        default: true,
     },
     blogLikes: {
         type: Number,
         default: 0,
     },
-    blogCollects:{
+    blogCollects: {
         type: Number,
         default: 0,
     },
-    blogReadings:{
+    blogReadings: {
         type: Number,
         default: 0,
     },
-    blogHot:{
+    blogHot: {
         type: Number,
         default: 0,
     },
-    blogComments: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Comment',
-    }]
+    blogComments: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Comment",
+        },
+    ],
 });
-autoIncrement.initialize(mongoose.connection); 
+autoIncrement.initialize(mongoose.connection);
 BlogSchema.plugin(autoIncrement.plugin, {
     model: "Blog",
     field: "id",

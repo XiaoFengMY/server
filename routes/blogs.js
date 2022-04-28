@@ -25,15 +25,20 @@ router.post("/addBlog", function (req, res, next) {
                 var id = req.body.id;
                 let param = {};
                 param.username = payload.userId;
-                param.blogTitle = req.body.blogTitle;
-                param.blogSort = req.body.blogSort;
-                param.blogTabs = req.body.blogTabs;
-                param.blogRecommend = req.body.blogRecommend;
-                param.blogContent = req.body.blogContent;
-                param.blogSee = req.body.blogSee;
-                param.updateTime = new Date();
-                // param.image = req.body.image[0].thumbUrl;
-                operate.update({ id: id }, param).then((result, error) => {
+                param.editTime = Date.now();
+                BlogModel.updateOne(
+                    { id: id },
+                    {
+                        blogTitle: req.body.blogTitle,
+                        blogSort: req.body.blogSort,
+                        blogTabs: req.body.blogTabs,
+                        blogRecommend: req.body.blogRecommend,
+                        blogContent: req.body.blogContent,
+                        blogSee: req.body.blogSee,
+                        updateTime: new Date(),
+                        $addToSet: { editUser: param },
+                    }
+                ).then((result, error) => {
                     if (result) {
                         res.json({
                             code: 1,
@@ -90,7 +95,7 @@ router.post("/editBlog", (req, res, next) => {
             });
         } else {
             operate.findOne({ id: param.id }).then((result, error) => {
-                if (result.username.toString() == payload.userId) {
+                if (result) {
                     res.json({
                         code: 1,
                         success: "编辑中",
@@ -179,7 +184,7 @@ router.get("/showBlogs", (req, res, next) => {
         listSort.id = -1;
     } else if (req.query.sort == "comprehensive") {
         listSort.blogHot = -1;
-    }else if(req.query.sort == "reading"){
+    } else if (req.query.sort == "reading") {
         listSort.blogReadings = -1;
     } else {
         listSort.id = 1;
@@ -255,12 +260,12 @@ router.post("/blogDetail", (req, res, next) => {
         { id: param.id },
         { $inc: { blogReadings: +1, blogHot: +2 } },
         function (error, result) {
-            if (error) {    
+            if (error) {
                 res.json({
                     code: 0,
                     err: error,
                     error: "查找失败",
-                });    
+                });
             } else {
                 operate
                     .find(
@@ -286,7 +291,7 @@ router.post("/blogDetail", (req, res, next) => {
                     });
             }
         }
-    );
+    ).populate("editUser.username", " username _id id useravatar introduce ");;
 });
 
 router.get("/showUerBlogs", (req, res, next) => {
