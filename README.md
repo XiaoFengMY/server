@@ -16,12 +16,12 @@
 - [ ] 文章归档
 
 ## 技术
-"bcrypt": "^5.0.1"
-"cors": "^2.8.5"
-"crypto-js": "^4.1.1"
-"express": "~4.16.1"
-"jsonwebtoken": "^8.5.1"
-"mongodb": "^4.3.0"
-"mongoose": "^6.1.5"
-"mongoose-auto-increment": "^5.0.1"
-"nodemon": "^2.0.15"
+- "bcrypt": "^5.0.1"
+- "cors": "^2.8.5"
+- "crypto-js": "^4.1.1"
+- "express": "~4.16.1"
+- "jsonwebtoken": "^8.5.1"
+- "mongodb": "^4.3.0"
+- "mongoose": "^6.1.5"
+- "mongoose-auto-increment": "^5.0.1"
+- "nodemon": "^2.0.15"
